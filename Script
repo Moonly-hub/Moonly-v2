@@ -105,7 +105,7 @@ end
 
 -- Ronaldo Mode Toggle (teleporting the ball based on the team)
 MainTab:CreateToggle({
-    Name = "Ronaldo Mode",
+    Name = "Ronaldo Mode (instantly goal)",
     CurrentValue = false, -- Initially off
     Flag = "ToggleTeleport",
     Callback = function(Value)
@@ -160,7 +160,7 @@ end
 
 -- Auto Grab Toggle
 MainTab:CreateToggle({
-    Name = "Auto Grab Ball",
+    Name = "Auto Grab Ball (for goal keeper)",
     CurrentValue = false, -- Start with the feature disabled
     Flag = "AutoGrabToggle",
     Callback = function(Value)
