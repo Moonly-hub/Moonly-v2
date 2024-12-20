@@ -80,27 +80,29 @@ end
 -- Variable to track toggle state for Ronaldo Mode
 local teleportEnabled = false
 
--- Event to detect when the football is kicked
-local function setupFootballDetection()
+-- Function to handle football detection and teleport
+local function detectAndTeleportFootball()
+    -- Try to find the football in the workspace
     local football = workspace:FindFirstChild("Football")
     if not football then
         warn("Football not found in the workspace.")
         return
     end
 
-    football:GetPropertyChangedSignal("AssemblyLinearVelocity"):Connect(function()
-        if teleportEnabled then
-            local velocity = football.AssemblyLinearVelocity
-            if velocity.Magnitude > 10 then -- Adjust the threshold as needed
-                local team = getPlayerTeam()
-                if team and targetPositions[team] then
-                    teleportFootball(football, targetPositions[team])
-                else
-                    warn("Team not detected or no target position for this team.")
-                end
+    -- Continuously check for the velocity of the football
+    while teleportEnabled do
+        local velocity = football.AssemblyLinearVelocity
+        if velocity.Magnitude > 10 then -- Threshold for triggering teleportation
+            local team = getPlayerTeam()
+            if team and targetPositions[team] then
+                teleportFootball(football, targetPositions[team])
+                break  -- Teleport the ball once, then stop checking
+            else
+                warn("Team not detected or no target position for this team.")
             end
         end
-    end)
+        wait(0.1)  -- Check every 0.1 seconds
+    end
 end
 
 -- Ronaldo Mode Toggle (teleporting the ball based on the team)
@@ -111,7 +113,7 @@ MainTab:CreateToggle({
     Callback = function(Value)
         teleportEnabled = Value -- Enable or disable the teleport feature
         if Value then
-            setupFootballDetection()
+            detectAndTeleportFootball()
         end
     end,
 })
