@@ -34,17 +34,18 @@ local Window = Rayfield:CreateWindow({
     }
 })
 
-local Tab = Window:CreateTab("Main", 4483362458) -- Title, Image
+-- Main Tab for features like Grab Ball, Auto Grab Ball, etc.
+local MainTab = Window:CreateTab("Main", 4483362458)
 
-local Section = Tab:CreateSection("Features")
-local Divider = Tab:CreateDivider()
+-- No CD Tab for Tackle
+local NoCDTab = Window:CreateTab("No CD", 4483362458)
 
-Rayfield:Notify({
-    Title = "Discord",
-    Content = "Make sure to join our discord :)",
-    Duration = 6.5,
-    Image = 4483362458,
-})
+local Section = MainTab:CreateSection("Features")
+local Divider = MainTab:CreateDivider()
+
+local Section = NoCDTab:CreateSection("Features")
+local Divider = NoCDTab:CreateDivider()
+
 
 -- Target positions for Home and Away teams
 local targetPositions = {
@@ -76,7 +77,7 @@ local function getPlayerTeam()
     return nil
 end
 
--- Variable to track toggle state
+-- Variable to track toggle state for Ronaldo Mode
 local teleportEnabled = false
 
 -- Event to detect when the football is kicked
@@ -102,8 +103,8 @@ local function setupFootballDetection()
     end)
 end
 
--- Create a toggle for enabling/disabling the feature
-Tab:CreateToggle({
+-- Ronaldo Mode Toggle (teleporting the ball based on the team)
+MainTab:CreateToggle({
     Name = "Ronaldo Mode",
     CurrentValue = false, -- Initially off
     Flag = "ToggleTeleport",
@@ -116,7 +117,7 @@ Tab:CreateToggle({
 })
 
 -- Grab Ball Button
-local Button = Tab:CreateButton({
+local Button = MainTab:CreateButton({
     Name = "Grab ball",
     Callback = function()
         local ball = game.Workspace:FindFirstChild("Football")
@@ -136,33 +137,78 @@ local Button = Tab:CreateButton({
     end,
 })
 
--- Tackle Button (One-time Slide Tackle)
-local tackleCooldown = false
+-- Auto Grab Ball Feature
+local autoGrabBallConnection = nil  -- Variable to hold the connection to the auto grab loop
 
-local tackleButton = Tab:CreateButton({
-    Name = "Slide Tackle",
-    Callback = function()
-        if not tackleCooldown then
-            tackleCooldown = true
-            -- Execute slide tackle logic here (trigger the tackle animation or movement)
-            local player = game.Players.LocalPlayer
-            local character = player.Character or player.CharacterAdded:Wait()
-
-            if character then
-                -- Put your tackle action here, for example:
-                local humanoid = character:FindFirstChildOfClass("Humanoid")
-                if humanoid then
-                    -- Trigger slide tackle animation or apply forces here
-                    humanoid:MoveTo(character.HumanoidRootPart.Position + character.HumanoidRootPart.CFrame.LookVector * 5) -- Example move
-                    print("Slide tackle executed!")
-                end
-            end
-
-            -- Cooldown to prevent multiple tackles at the same time
-            wait(1) -- Add a delay between tackles if necessary
-            tackleCooldown = false
-        else
-            print("Tackle is on cooldown!")
+local function grabBallAutomatically()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local rootPart = character:WaitForChild("HumanoidRootPart")
+    local ball = workspace:FindFirstChild("Football")
+    
+    if ball then
+        local ballPosition = ball.Position
+        local distance = (ballPosition - rootPart.Position).Magnitude
+        
+        -- If the ball is within a certain range (e.g., 10 studs), teleport it to the player
+        if distance < 10 then
+            ball.CFrame = rootPart.CFrame
+            print("Football grabbed by player.")
         end
+    end
+end
+
+-- Auto Grab Toggle
+MainTab:CreateToggle({
+    Name = "Auto Grab Ball",
+    CurrentValue = false, -- Start with the feature disabled
+    Flag = "AutoGrabToggle",
+    Callback = function(Value)
+        if Value then
+            -- Start checking for the ball every 0.1 seconds
+            autoGrabBallConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                grabBallAutomatically()
+            end)
+        else
+            -- Disconnect the auto grab ball connection when the toggle is turned off
+            if autoGrabBallConnection then
+                autoGrabBallConnection:Disconnect()
+                autoGrabBallConnection = nil
+                print("Auto Grab Ball stopped.")
+            end
+        end
+    end,
+})
+
+-- Tackle Animation ID
+local tackleAnimationId = "rbxassetid://18668814876"
+
+-- Tackle Button on No CD Tab
+NoCDTab:CreateButton({
+    Name = "Tackle",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local humanoid = character:WaitForChild("Humanoid")
+        local rootPart = character:WaitForChild("HumanoidRootPart")
+
+        -- Load and play the tackle animation
+        local tackleAnim = Instance.new("Animation")
+        tackleAnim.AnimationId = tackleAnimationId
+        local animTrack = humanoid:LoadAnimation(tackleAnim)
+
+        -- Play the animation
+        animTrack:Play()
+
+        -- Move the character forward to simulate a slide
+        local slideDistance = 20 -- How far the character should slide
+        local direction = rootPart.CFrame.LookVector -- Direction the character is facing
+
+        -- Slide the character by setting the position continuously (simulates sliding)
+        local slideTween = game:GetService("TweenService"):Create(rootPart, TweenInfo.new(0.5, Enum.EasingStyle.Linear), {CFrame = rootPart.CFrame + direction * slideDistance})
+        slideTween:Play()
+
+        -- Optional: Add some logic here to handle cooldown or other effects
+        -- For example, cooldown logic or adding force to the ball after the animation plays
     end,
 })
