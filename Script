@@ -137,49 +137,6 @@ local Button = MainTab:CreateButton({
     end,
 })
 
--- Auto Grab Ball Feature
-local autoGrabBallConnection = nil  -- Variable to hold the connection to the auto grab loop
-
-local function grabBallAutomatically()
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local rootPart = character:WaitForChild("HumanoidRootPart")
-    local ball = workspace:FindFirstChild("Football")
-    
-    if ball then
-        local ballPosition = ball.Position
-        local distance = (ballPosition - rootPart.Position).Magnitude
-        
-        -- If the ball is within a certain range (e.g., 10 studs), teleport it to the player
-        if distance < 70 then
-            ball.CFrame = rootPart.CFrame
-            print("Football grabbed by player.")
-        end
-    end
-end
-
--- Auto Grab Toggle
-MainTab:CreateToggle({
-    Name = "Auto Grab Ball (for goal keeper)",
-    CurrentValue = false, -- Start with the feature disabled
-    Flag = "AutoGrabToggle",
-    Callback = function(Value)
-        if Value then
-            -- Start checking for the ball every 0.1 seconds
-            autoGrabBallConnection = game:GetService("RunService").Heartbeat:Connect(function()
-                grabBallAutomatically()
-            end)
-        else
-            -- Disconnect the auto grab ball connection when the toggle is turned off
-            if autoGrabBallConnection then
-                autoGrabBallConnection:Disconnect()
-                autoGrabBallConnection = nil
-                print("Auto Grab Ball stopped.")
-            end
-        end
-    end,
-})
-
 -- Tackle Animation ID
 local tackleAnimationId = "rbxassetid://18668814876"
 
@@ -210,5 +167,30 @@ NoCDTab:CreateButton({
 
         -- Optional: Add some logic here to handle cooldown or other effects
         -- For example, cooldown logic or adding force to the ball after the animation plays
+    end,
+})
+
+-- Swap Goal Areas Function
+local function swapGoalAreas()
+    local homeGoal = workspace:FindFirstChild("Home")
+    local awayGoal = workspace:FindFirstChild("Away")
+    
+    if homeGoal and awayGoal then
+        -- Swap their positions
+        homeGoal.Position = awayGoal.Position
+        awayGoal.Position = homeGoal.Position
+
+        -- Print a success message just once
+        print("Successful")
+    else
+        warn("Goal areas not found!")
+    end
+end
+
+-- Add Swap Goal Areas Button to the Main Tab
+MainTab:CreateButton({
+    Name = "Swap Goal Areas",
+    Callback = function()
+        swapGoalAreas()
     end,
 })
