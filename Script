@@ -135,3 +135,34 @@ local Button = Tab:CreateButton({
         end
     end,
 })
+
+-- Tackle Button (One-time Slide Tackle)
+local tackleCooldown = false
+
+local tackleButton = Tab:CreateButton({
+    Name = "Slide Tackle",
+    Callback = function()
+        if not tackleCooldown then
+            tackleCooldown = true
+            -- Execute slide tackle logic here (trigger the tackle animation or movement)
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+
+            if character then
+                -- Put your tackle action here, for example:
+                local humanoid = character:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    -- Trigger slide tackle animation or apply forces here
+                    humanoid:MoveTo(character.HumanoidRootPart.Position + character.HumanoidRootPart.CFrame.LookVector * 5) -- Example move
+                    print("Slide tackle executed!")
+                end
+            end
+
+            -- Cooldown to prevent multiple tackles at the same time
+            wait(1) -- Add a delay between tackles if necessary
+            tackleCooldown = false
+        else
+            print("Tackle is on cooldown!")
+        end
+    end,
+})
