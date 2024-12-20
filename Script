@@ -137,6 +137,7 @@ local Button = MainTab:CreateButton({
     end,
 })
 
+
 -- Tackle Animation ID
 local tackleAnimationId = "rbxassetid://18668814876"
 
@@ -167,30 +168,5 @@ NoCDTab:CreateButton({
 
         -- Optional: Add some logic here to handle cooldown or other effects
         -- For example, cooldown logic or adding force to the ball after the animation plays
-    end,
-})
-
--- Swap Goal Areas Function
-local function swapGoalAreas()
-    local homeGoal = workspace:FindFirstChild("Home")
-    local awayGoal = workspace:FindFirstChild("Away")
-    
-    if homeGoal and awayGoal then
-        -- Swap their positions
-        homeGoal.Position = awayGoal.Position
-        awayGoal.Position = homeGoal.Position
-
-        -- Print a success message just once
-        print("Successful")
-    else
-        warn("Goal areas not found!")
-    end
-end
-
--- Add Swap Goal Areas Button to the Main Tab
-MainTab:CreateButton({
-    Name = "Swap Goal Areas",
-    Callback = function()
-        swapGoalAreas()
     end,
 })
